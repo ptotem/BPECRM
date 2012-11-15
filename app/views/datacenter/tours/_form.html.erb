@@ -1,0 +1,88 @@
+<style type="text/css">
+    body.active_admin form input[type="text"], body.active_admin form input[type="password"], body.active_admin form input[type="email"], body.active_admin form input[type="number"], body.active_admin form input[type="url"], body.active_admin form input[type="tel"], body.active_admin form textarea {
+        width: 70%;
+    }
+
+    body.active_admin a, body.active_admin a:link, body.active_admin a:visited {
+        color: black;
+        text-decoration: none;
+    }
+</style>
+<script type="text/javascript">
+    $(function () {
+        $('select.dropper').chosen();
+        $('FORM').nestedFields({
+            afterInsert:function (item) {
+                $('select.dropper').chosen();
+            }
+        });
+
+    })
+</script>
+
+<%= semantic_form_for [:datacenter, @tour] do |f| %>
+    <table style="width: 100%">
+      <tr>
+        <td style="width:30%">
+          <%= f.inputs do %>
+              <%= f.input :tour_date %>
+          <% end %>
+        </td>
+        <td>
+          <%= f.inputs do %>
+              <%= f.input :contact, :input_html=>{:class=>'dropper'} %>
+              <%= f.input :employee, :input_html=>{:class=>'dropper'} %>
+              <%= f.input :coordinator, :input_html=>{:class=>'dropper'} %>
+          <% end %>
+        </td>
+        <td style="width:40%">
+          <%= f.inputs do %>
+              <%= f.input :comments, :input_html => {:rows => 8} %>
+          <% end %>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          <h2 style="padding: 20px;background: #e5e5e5;border-radius: 3px;">Tour Showings
+            <a href="#" class="add" style="float:right;font-size: 18px;">Add Showing</a>
+          </h2>
+          <br>
+          <br>
+
+          <div class="items">
+            <%= f.nested_fields_for :showings do |f| %>
+                <fieldset class="item" style="margin-top: -50px;">
+                  <a href="#" class="remove" style="float:right; margin-right: 20px;">Remove</a>
+                  <table>
+                    <tr>
+                      <td>
+                        <%= f.inputs do %>
+                            <%= f.input :flat, :as => :select, :collection => Flat.all.map { |flat| ["#{flat.key}: #{flat.name}, #{flat.building.name}", flat.id] }, :input_html=>{:class=>'dropper'} %>
+                            <%= f.input :showtime %>
+                            <%= f.input :tag_list, :as => :select, :multiple => true, :collection => Contact.all.map{|c| [c.name, c.name]}, :input_html=>{:class=>'dropper'} %>
+                        <% end %>
+                      </td>
+                      <td>
+                        <%= f.inputs do %>
+                            <%= f.input :comment, :input_html => {:rows => 8} %>
+                        <% end %>
+                      </td>
+                      <td>
+                        <%= f.inputs do %>
+                            <%= f.input :feedback, :input_html => {:rows => 8} %>
+                        <% end %>
+                      </td>
+                    </tr>
+                  </table>
+                  <%= f.hidden_field :id %>
+                  <%= f.hidden_field :_destroy %>
+                </fieldset>
+            <% end %>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <%= f.actions %>
+<% end %>
+

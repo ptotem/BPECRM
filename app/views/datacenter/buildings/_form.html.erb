@@ -1,0 +1,252 @@
+<style type="text/css">
+    body.active_admin form input[type="text"], body.active_admin form input[type="password"], body.active_admin form input[type="email"], body.active_admin form input[type="number"], body.active_admin form input[type="url"], body.active_admin form input[type="tel"], body.active_admin form textarea {
+        width: 70%;
+    }
+</style>
+
+<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAgrj58PbXr2YriiRDqbnL1RSqrCjdkglBijPNIIYrqkVvD1R4QxRl47Yh2D_0C1l5KXQJGrbkSDvXFA" type="text/javascript"></script>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+<script type="text/javascript">
+    $(function () {
+        $('FORM').nestedFields();
+    });
+
+
+    function stopRKey(evt) {
+        var evt = (evt) ? evt : ((event) ? event : null);
+        var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+        if ((evt.keyCode == 13) && (node.type == "text")) {
+            return false;
+        }
+    }
+
+    document.onkeypress = stopRKey;
+
+    var map;
+    <% unless @building.latitude.blank? %>
+    var myLatlng = new google.maps.LatLng(<%= @building.latitude %>, <%= @building.longitude %>);
+    <% else %>
+    var myLatlng = new google.maps.LatLng(18.9647, 72.8258);
+    <% end %>
+    function initialize() {
+
+        var myOptions = {
+            zoom:17,
+            center:myLatlng,
+            mapTypeId:google.maps.MapTypeId.ROADMAP
+        };
+        map = new google.maps.Map(document.getElementById('map'),
+                myOptions);
+
+        //this is the code for marker
+        var marker = new google.maps.Marker({
+            draggable:true,
+            position:myLatlng,
+            map:map,
+            title:"This is where you are"
+        });
+        marker.setIcon("/assets/marker.png");
+
+        //this is the code for search in the map
+        geocoder = new google.maps.Geocoder();
+
+        //this is the code for autocomplete
+        var input = document.getElementById('address');
+        var autocomplete = new google.maps.places.Autocomplete(input);
+
+        autocomplete.bindTo('bounds', map);
+
+        var infowindow = new google.maps.InfoWindow();
+
+        google.maps.event.addListener(autocomplete, 'place_changed', function () {
+            infowindow.close();
+            var place = autocomplete.getPlace();
+            if (place.geometry.viewport) {
+                map.fitBounds(place.geometry.viewport);
+            } else {
+                map.setCenter(place.geometry.location);
+                map.setZoom(17);  // Why 17? Because it looks good.
+            }
+
+            marker.setPosition(place.geometry.location);
+
+            var address = '';
+            if (place.address_components) {
+                address = [(place.address_components[0] &&
+                        place.address_components[0].short_name || ''),
+                    (place.address_components[1] &&
+                            place.address_components[1].short_name || ''),
+                    (place.address_components[2] &&
+                            place.address_components[2].short_name || '')
+                ].join(' ');
+            }
+
+            infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
+//            infowindow.open(map, marker);
+        });
+
+
+        //this code enables user to click on the market and zoom the map
+
+        google.maps.event.addDomListener(marker, 'click', function () {
+            map.setZoom(map.getZoom() * 2);
+            map.setCenter(marker.getPosition());
+        });
+
+        //this is the code to allow user to click anywhere on the map and it returns latitude and logitude and moves the marker there
+
+        //we first add the event listener
+        google.maps.event.addListener(map, 'click', function (event) {
+            placeMarker(event.latLng);
+        });
+
+        google.maps.event.addListener(marker, 'drag', function (event) {
+            placeMarker(event.latLng);
+        });
+
+        function placeMarker(location) {
+            if (marker) { //on vérifie si le marqueur existe
+                marker.setPosition(location); //on change sa position
+            } else {
+                marker = new google.maps.Marker({ //on créé le marqueur
+                    position:location,
+                    map:map
+                });
+            }
+
+            document.getElementById('building_latitude').value = location.lat();
+            document.getElementById('building_longitude').value = location.lng();
+            getAddress(location);
+        }
+
+        function getAddress(latLng) {
+            geocoder.geocode({'latLng':latLng},
+                    function (results, status) {
+                        if (status == google.maps.GeocoderStatus.OK) {
+                            if (results[0]) {
+                                document.getElementById("address").value = results[0].formatted_address;
+                            }
+                            else {
+                                document.getElementById("address").value = "No results";
+                            }
+                        }
+                        else {
+
+                            if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
+
+                            }
+                            else {
+                                document.getElementById("address").value = status;
+                            }
+                        }
+                    });
+        }
+
+
+    }
+    //end of initialize
+
+    //this is the function which searches the map
+    function codeAddress() {
+        var address = document.getElementById("address").value;
+        geocoder.geocode({ 'address':address}, function (results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                map.setCenter(results[0].geometry.location);
+                var marker = new google.maps.Marker({
+                    map:map,
+                    position:results[0].geometry.location
+                });
+            } else {
+                alert("Geocode was not successful for the following reason: " + status);
+            }
+        });
+    }
+
+    function handleNoGeolocation(errorFlag) {
+        if (errorFlag) {
+            var content = 'Error: The Geolocation service failed.';
+        } else {
+            var content = 'Error: Your browser doesn\'t support geolocation.';
+        }
+
+        var options = {
+            map:map,
+            position:new google.maps.LatLng(60, 105),
+            content:content
+        };
+
+        var infowindow = new google.maps.InfoWindow(options);
+        map.setCenter(options.position);
+    }
+
+
+    google.maps.event.addDomListener(window, 'load', initialize);
+
+
+</script>
+
+<%= semantic_form_for [:datacenter, @building] do |f| %>
+    <table style="width:100%;padding:0;">
+      <tr>
+        <td style="width:60%"><%= f.inputs :name, :locality, :building_quality, :approach_quality %></td>
+        <td rowspan="2">
+
+          <%= f.inputs do %>
+              <%= text_field_tag :search, "", :id => "address", :style => "margin-left:10px;" %>
+              <%= link_to "Search", "#", :id => "update-map", :onclick => "codeAddress();", :class => "btn btn-inverse", :style => "margin-top:-10px;" %>
+              <br>
+              <br>
+
+              <div id="map" style="height: 360px;width:320px;margin: 0 auto;border:2px solid black;"></div>
+
+              <br>
+              <%= f.input :latitude %>
+              <%= f.input :longitude %>
+          <% end %>
+        </td>
+      </tr>
+      <tr>
+        <td style="width:60%;vertical-align: top">
+          <%= f.inputs do %>
+              <%= f.input :address, :input_html => {:rows => 3} %>
+              <%= f.input :road %>
+              <%= f.input :pincode %>
+              <%= f.input :landmark %>
+              <%= f.input :year_built, :as => :select, :collection => (1980..Time.now.year).to_a %>
+          <% end %>
+        </td>
+      </tr>
+    </table>
+    <%= f.inputs do %>
+        <%= f.input :tag_list, :as => :check_boxes, :collection => ActsAsTaggableOn::Tag.where("focus=='building'").all.map { |b| b.name } %>
+    <% end %>
+
+    <%= f.inputs do %>
+        <%= f.input :description, :input_html => {:rows => 3} %>
+        <%= f.input :private_note, :input_html => {:rows => 3} %>
+        <%= f.input :moving_charge %>
+    <% end %>
+
+    <h2>Flats
+      <a href="#" class="add" style="float:right;font-size: 18px;">Add Flat</a>
+    </h2>
+    <br>
+    <br>
+
+    <div class="items">
+      <%= f.nested_fields_for :flats do |f| %>
+          <fieldset class="item" style="margin-top: -50px;">
+            <%= f.inputs do %>
+                <a href="#" class="remove" style="float:right; margin-right: 20px;">Remove</a>
+                <%= f.input :name %>
+                <%= f.input :bhk_config %>
+            <% end %>
+            <%= f.hidden_field :id %>
+            <%= f.hidden_field :_destroy %>
+          </fieldset>
+      <% end %>
+    </div>
+
+    <%= f.actions %>
+<% end %>
+

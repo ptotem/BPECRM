@@ -1,0 +1,31 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: MyString
+  primary_locality_id: 1
+  building_quality_id: 1
+  approach_quality_id: 1
+  address: MyText
+  road: MyString
+  pincode: 1
+  year_built: 1
+  latitude: 1.5
+  longitude: 1.5
+  description: MyText
+  landmark: MyString
+  moving_charge: MyString
+
+two:
+  name: MyString
+  primary_locality_id: 1
+  building_quality_id: 1
+  approach_quality_id: 1
+  address: MyText
+  road: MyString
+  pincode: 1
+  year_built: 1
+  latitude: 1.5
+  longitude: 1.5
+  description: MyText
+  landmark: MyString
+  moving_charge: MyString

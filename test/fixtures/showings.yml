@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  tour_id: 1
+  flat_id: 1
+  showtime: 2012-11-13 03:55:08
+
+two:
+  tour_id: 1
+  flat_id: 1
+  showtime: 2012-11-13 03:55:08

@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  building_id: 1
+  name: MyString
+  interiors_quality_id: 1
+  view_quality_id: 1
+  carpet_area: 1
+  floor: MyString
+  key: MyString
+
+two:
+  building_id: 1
+  name: MyString
+  interiors_quality_id: 1
+  view_quality_id: 1
+  carpet_area: 1
+  floor: MyString
+  key: MyString
